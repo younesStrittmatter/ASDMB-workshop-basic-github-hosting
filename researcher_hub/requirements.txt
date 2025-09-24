@@ -2,3 +2,5 @@ autora-core
 autora[experiment-runner-firebase-prolific]
 sweetbean
 sweetpea
+psyneulink
+cmaes
