@@ -1,23 +1,24 @@
 Usage:
 
 ## In the Browser:
-(1) Go to Firebase Console and create a new project (or use an existing one)
-(2) Create a Wep App in the Project Setting (if you haven't already)
+
+- (1) Go to Firebase Console and create a new project (or use an existing one)
+- (2) Create a Wep App in the Project Setting (if you haven't already)
     - If you setting up a Project, copy the firebaseConfig into index.html (in the docs folder)
     - If you have already setup a project before, you find the firebaseConfig here:
         Click in the top-left corner on the gear icon (Project Settings) -> scroll down a little bit
-(3) Create a Firestore Database
-    - Click on Build (left sidebar) -> Firestore Database -> Create Database
-    - Choose a location and start in production Mode
-    - Copy the rules from `testing_zone/firestore.rules` into the rules tab and publish them
-(4) Get the Service Account Key
-- Next to Project Overview, click on the gear icon (Project Settings)
-- On the top, click on the tab "Service Accounts"
-- Generate a new private key and store the downloaded file in the researcher_hub folder of this project
-  under the name `firebase_credentials.json`
+- (3) Create a Firestore Database
+  - Click on Build (left sidebar) -> Firestore Database -> Create Database
+  - Choose a location and start in production Mode
+  - Copy the rules from `testing_zone/firestore.rules` into the rules tab and publish them
+- (4) Get the Service Account Key
+  - Next to Project Overview, click on the gear icon (Project Settings)
+  - On the top, click on the tab "Service Accounts"
+  - Generate a new private key and store the downloaded file in the researcher_hub folder of this project
+    under the name `firebase_credentials.json`
 
 ## In the Project (Terminal)
-(5) CD into the testing_zone in this project and run the following commands: 
+- (5) CD into the testing_zone in this project and run the following commands: 
 
 ```shell
 cd testing_zone
@@ -37,12 +38,12 @@ firebase init
 > If asked to overwrite, choose no
 > ? What file should be used for Firestore indexes? > firestore.indexes.json -> enter
 
-(6) Now you can deploy the firestore rules:
+- (6) Now you can deploy the firestore rules:
 ```shell
 firebase deploy
 ```
 
-(7) Cd into the researcher_hub folder and install the requirements:
+- (7) Cd into the researcher_hub folder and install the requirements:
 
 ```shell
 cd ../researcher_hub
@@ -66,29 +67,28 @@ Then install the requirements:
 pip install -r requirements.txt
 ```
 
-(7) Now you can run the researcher hub:
+- (8) Now you can run the researcher hub:
 
 ```shell
 python autora_workflow.py
 ```
 
-(8) Wait until the conditions are uploaded. (You can see this in your Browser in the Firestore Database)
+- (9) Wait until the conditions are uploaded. (You can see this in your Browser in the Firestore Database)
 
-(9) As soon as the terminal starts spamming a red string you can open the `docs/index.html` in a browser
+- (10) As soon as the terminal starts spamming a red string you can open the `docs/index.html` in a browser
 and should see the experiment.
 
-(10) You can test the experiment twice (because there are two conditions). For now, the experiment will end 
+- (11) You can test the experiment twice (because there are two conditions). For now, the experiment will end 
 "abruptly" after a few trials. You notice when there are no new stimuli appearing.
 
 ## Set up as github pages to host the experiment:
 
-(11) Push everything to github (make sure firebase_credentials.json is in .gitignore so you don't expose your credentials)
-(12) Go to the repository on github.com
-(13) Go to Settings -> Pages (on the left sidebar)
-(14) Under "Build and deployment" select "Deploy from a branch"
-(15) Under "Branch" select "main" and "/docs" folder
-(16) Save
-(17) After a few minutes, your experiment should be available under https://<your-github-username>.github.io/<your-repo-name>/
-
-(18) Sucess: You can run the autora_workflow.py in this projcet to upload new conditions to firestore and do the experiment 
-on the gihub pages link
+- (12) Push everything to github (make sure firebase_credentials.json is in .gitignore so you don't expose your credentials)
+- (13) Go to the repository on github.com
+- (14) Go to Settings -> Pages (on the left sidebar)
+- (15) Under "Build and deployment" select "Deploy from a branch"
+- (16) Under "Branch" select "main" and "/docs" folder
+- (17) Save
+- (18) After a few minutes, your experiment should be available under https://<your-github-username>.github.io/<your-repo-name>/
+- (19) Success: You can run the autora_workflow.py in this projcet to upload new conditions to firestore and do the experiment 
+on the gitHub pages link
