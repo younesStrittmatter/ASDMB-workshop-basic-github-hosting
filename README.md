@@ -31,12 +31,13 @@ firebase login
 ```shell
 firebase init
 ```
-> Choose only Firestore (not Hosting, Functions, etc)
-> Use an existing project (the one you just created)
-> for database you can choose nam5 and us-central (or whatever is close to you)
-> ? What file should be used for Firestore Rules? > firestore.rules -> enter
-> If asked to overwrite, choose no
-> ? What file should be used for Firestore indexes? > firestore.indexes.json -> enter
+
+> - Choose only Firestore (not Hosting, Functions, etc)
+> - Use an existing project (the one you just created)
+> - for database you can choose nam5 and us-central (or whatever is close to you)
+> - ? What file should be used for Firestore Rules? > firestore.rules -> enter
+> - If asked to overwrite, choose no
+> - ? What file should be used for Firestore indexes? > firestore.indexes.json -> enter
 
 - (6) Now you can deploy the firestore rules:
 ```shell
