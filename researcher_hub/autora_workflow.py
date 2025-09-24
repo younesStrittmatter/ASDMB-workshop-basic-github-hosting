@@ -23,7 +23,7 @@ variables = VariableCollection(
         Variable(name="congruency_freq", allowed_values=[25, 50, 75])
     ],
     dependent_variables=[
-        Variable(name="conruency_effect", value_range=(-100, 100))], )
+        Variable(name="congruency_effect", value_range=(-100, 100))], )
 
 # *** State *** #
 

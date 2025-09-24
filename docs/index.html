@@ -1,228 +1,205 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>AutoRA Experiment</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>AutoRA Experiment</title>
 
-  <!-- Styles (pin versions you use) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspsych@8/css/jspsych.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetbean@latest/dist/style/main.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetbean@latest/dist/style/bandit.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetbean@latest/dist/style/touch-buttons.css"/>
+    <!-- Styles (pin versions you use) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspsych@8/css/jspsych.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetbean@latest/dist/style/main.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetbean@latest/dist/style/bandit.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetbean@latest/dist/style/touch-buttons.css"/>
 
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-    #status { max-width: 720px; margin: 24px auto; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; }
-  </style>
 </head>
 <body>
-  <div id="status">Loading…</div>
-  <div id="root"></div>
+<div id="status">Loading…</div>
+<div id="root"></div>
 
-  <script type="module">
-    /***********************
-     * Imports
-     ***********************/
-    // Firebase modular SDK (gstatic is fine since you’re not importing autora-firebase-functions)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+<script type="module">
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import {
-      getFirestore, doc, getDoc, runTransaction,
-      writeBatch, setDoc, updateDoc, serverTimestamp
+        getFirestore, doc, getDoc, runTransaction,
+        writeBatch, setDoc, updateDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-
-    // React (tiny error view)
     import React from "https://esm.sh/react@18";
     import ReactDOM from "https://esm.sh/react-dom@18/client";
 
-    // jsPsych + plugins + SweetBean runtime (globals for experiment code)
-    import { initJsPsych } from "https://esm.sh/jspsych@7";
+    import {initJsPsych} from "https://esm.sh/jspsych@7";
     import htmlKeyboardResponse from "https://esm.sh/@jspsych/plugin-html-keyboard-response@2";
     import jsPsychRok from "https://esm.sh/@jspsych-contrib/plugin-rok";
     import jsPsychExtensionTouchscreenButtons from "https://esm.sh/@sweet-jspsych/extension-touchscreen-buttons";
     import * as SweetBeanRuntime from "https://esm.sh/sweetbean@latest/dist/runtime";
 
-    // Expose globals expected by your experiment code
     globalThis.initJsPsych = initJsPsych;
     globalThis.jsPsychHtmlKeyboardResponse = htmlKeyboardResponse;
     globalThis.jsPsychRok = jsPsychRok;
     globalThis.jsPsychExtensionTouchscreenButtons = jsPsychExtensionTouchscreenButtons;
     Object.entries(SweetBeanRuntime).forEach(([k, v]) => (globalThis[k] = v));
 
-    /***********************
-     * Minimal UI helpers
-     ***********************/
     const $status = document.getElementById('status');
     const setStatus = (msg) => ($status.textContent = msg);
 
-    function ErrorView({ message = "An error occurred." }) {
-      return React.createElement("div", null, message);
+    function ErrorView({message = "An error occurred."}) {
+        return React.createElement("div", null, message);
     }
-    function waitPage(){ setStatus("Saving data… Please wait."); }
-    function endPage(){ setStatus("Thanks! Your data was saved."); }
+
+    function waitPage() {
+        setStatus("Saving data… Please wait.");
+    }
+
+    function endPage() {
+        setStatus("Thanks! Your data was saved.");
+    }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
 
     /***********************
-     * CHANGE THIS HERE: Firebase config
+     * CHANGE THIS HERE: From Firebase Config
      ***********************/
     const firebaseConfig = {
-      apiKey: "AIzaSyBt1vL4tuAEWxhkutChcRLNqD_VsBAZ_NU",
-      authDomain: "asdmb-stroop-loop.firebaseapp.com",
-      projectId: "asdmb-stroop-loop",
-      storageBucket: "asdmb-stroop-loop.firebasestorage.app",
-      messagingSenderId: "1048439580744",
-      appId: "1:1048439580744:web:36453e2ad02aea077f507d"
+        apiKey: "",
+          authDomain: "",
+          projectId: "",
+          storageBucket: "",
+          messagingSenderId: "",
+          appId: "",
+          measurementId: ""
     };
     const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
+    const db = getFirestore(app);
 
-    /***********************
-     * Firestore helpers
-     ***********************/
-    // ✅ All reads first, then the write inside the transaction
     async function getCondition(db, study, pId = null) {
-      const metaRef = doc(db, study, "autora_meta");
-      return await runTransaction(db, async (tx) => {
-        // Read meta
-        const metaSnap = await tx.get(metaRef);
-        if (!metaSnap.exists()) throw new Error(`Missing document: ${study}/autora_meta`);
-        const meta = metaSnap.data() || {};
-        console.log(meta)
+        const metaRef = doc(db, study, "autora_meta");
+        return await runTransaction(db, async (tx) => {
+            // Read meta
+            const metaSnap = await tx.get(metaRef);
+            if (!metaSnap.exists()) throw new Error(`Missing document: ${study}/autora_meta`);
+            const meta = metaSnap.data() || {};
+            console.log(meta)
 
-        // Pick first free id
-        let chosenId = null;
-        for (const key of Object.keys(meta)) {
-          const entry = meta[key] ?? {};
-          if (entry.start_time == null) { chosenId = key; break; }
-        }
-        if (!chosenId) return false;
+            let chosenId = null;
+            for (const key of Object.keys(meta)) {
+                const entry = meta[key] ?? {};
+                if (entry.start_time == null) {
+                    chosenId = key;
+                    break;
+                }
+            }
+            if (!chosenId) return false;
 
-        console.log('got something', chosenId)
+            const condRef = doc(db, study, "autora_in", "conditions", chosenId);
+            const condSnap = await tx.get(condRef);
+            console.log(condSnap)
 
-        // Read condition BEFORE any write (Firestore requirement)
-        const condRef  = doc(db, study, "autora_in", "conditions", chosenId);
-        const condSnap = await tx.get(condRef);
-        console.log(condSnap)
+            if (!condSnap.exists()) throw new Error(`Missing condition doc: ${study}/autora_in/conditions/${chosenId}`);
+            const condDoc = condSnap.data() || {};
+            const condition = condDoc[chosenId];
+            console.log(condition)
 
-        if (!condSnap.exists()) throw new Error(`Missing condition doc: ${study}/autora_in/conditions/${chosenId}`);
-        const condDoc  = condSnap.data() || {};
-        const condition = condDoc[chosenId];
-        console.log(condition)
+            if (condition == null) throw new Error(`Condition doc lacks field '${chosenId}'`);
 
-        if (condition == null) throw new Error(`Condition doc lacks field '${chosenId}'`);
+            // Now perform the write (claim the slot)
+            const nowUnix = Math.floor(Date.now() / 1000);
+            tx.update(metaRef, {
+                [`${chosenId}.start_time`]: nowUnix,
+                [`${chosenId}.claimed_at`]: serverTimestamp(),
+                [`${chosenId}.finished`]: false,
+                [`${chosenId}.pId`]: pId ?? null,
+            });
 
-        // Now perform the write (claim the slot)
-        const nowUnix = Math.floor(Date.now() / 1000);
-        tx.update(metaRef, {
-          [`${chosenId}.start_time`]: nowUnix,
-          [`${chosenId}.claimed_at`]: serverTimestamp(),
-          [`${chosenId}.finished`]: false,
-          [`${chosenId}.pId`]: pId ?? null,
+            return [chosenId, condition];
         });
-
-        return [chosenId, condition];
-      });
     }
 
     async function setObservation(db, study, id, observation, meta = true) {
-      const batch = writeBatch(db);
-      if (meta) {
-        const metaRef = doc(db, study, "autora_meta");
-        batch.update(metaRef, {
-          [`${id}.finished`]: true,
-          [`${id}.finished_at`]: serverTimestamp(),
-        });
-      }
-      const outRef = doc(db, study, "autora_out", "observations", id);
-      batch.set(outRef, { [id]: observation });
-      await batch.commit();
+        const batch = writeBatch(db);
+        if (meta) {
+            const metaRef = doc(db, study, "autora_meta");
+            batch.update(metaRef, {
+                [`${id}.finished`]: true,
+                [`${id}.finished_at`]: serverTimestamp(),
+            });
+        }
+        const outRef = doc(db, study, "autora_out", "observations", id);
+        batch.set(outRef, {[id]: observation});
+        await batch.commit();
     }
 
     async function setBackup(db, study, id, condition, observation) {
-      const ms = Date.now();
-      const ref = doc(db, study, "autora_out", "data_all", `${id}_${ms}`);
-      await setDoc(ref, {
-        condition,
-        observation,
-        created_at: serverTimestamp(),
-        created_at_ms: ms,
-        id,
-      });
+        const ms = Date.now();
+        const ref = doc(db, study, "autora_out", "data_all", `${id}_${ms}`);
+        await setDoc(ref, {
+            condition,
+            observation,
+            created_at: serverTimestamp(),
+            created_at_ms: ms,
+            id,
+        });
     }
 
-    /***********************
-     * main(id, condition) — runs your experiment code
-     ***********************/
     async function main(id, condition) {
-      const code = String(condition?.experiment_code ?? "");
-      if (!code.includes("runExperiment")) {
-        throw new Error("experiment_code missing runExperiment()");
-      }
-      // ⚠️ Only store trusted code in Firestore.
-      // eslint-disable-next-line no-eval
-      const observation = await eval(code + "\nrunExperiment();");
-      return JSON.stringify(observation);
+        const code = String(condition?.experiment_code ?? "");
+        if (!code.includes("runExperiment")) {
+            throw new Error("experiment_code missing runExperiment()");
+        }
+        const observation = await eval(code + "\nrunExperiment();");
+        return JSON.stringify(observation);
     }
 
-    /***********************
-     * index() — flow with URL flags
-     ***********************/
     async function index() {
-      const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.location.search);
 
-      const useProlific = params.get("useProlificId") !== "True";  // default True; override with ?useProlificId=False
+        const useProlific = params.get("useProlificId") !== "True";  // default True; override with ?useProlificId=False
 
 
-
-      let prolificId = null;
-      if (useProlific) {
-        prolificId = params.get("PROLIFIC_PID");
-      }
-
-      setStatus("Fetching condition…");
-      let condition;
-      try {
-        condition = await getCondition(db, "autora", prolificId);
-      } catch (e) {
-        console.error(e);
-        root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, { message: "Failed to fetch condition." })));
-        return;
-      }
-
-      if (condition) {
-        let observation;
-        try {
-          setStatus("");
-          observation = await main(condition[0], condition[1]);
-        } catch (e) {
-          console.error(e);
-          root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, { message: "Experiment error. See console." })));
-          return;
+        let prolificId = null;
+        if (useProlific) {
+            prolificId = params.get("PROLIFIC_PID");
         }
 
+        setStatus("Fetching condition…");
+        let condition;
         try {
-          waitPage();
-          await setObservation(db, "autora", condition[0], observation);
-          await setBackup(db, "autora", condition[0], condition[1], observation);
-          endPage();
+            condition = await getCondition(db, "autora", prolificId);
         } catch (e) {
-          console.error(e);
-          root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, { message: "Failed to save data." })));
+            console.error(e);
+            root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, {message: "Failed to fetch condition."})));
+            return;
         }
-      } else {
-        root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, { message: "No condition found." })));
-      }
+
+        if (condition) {
+            let observation;
+            try {
+
+                observation = await main(condition[0], condition[1]);
+                setStatus("Experiment finished...")
+            } catch (e) {
+                console.error(e);
+                root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, {message: "Experiment error. See console."})));
+                return;
+            }
+
+            try {
+                waitPage();
+                await setObservation(db, "autora", condition[0], observation);
+                await setBackup(db, "autora", condition[0], condition[1], observation);
+                endPage();
+            } catch (e) {
+                console.error(e);
+                root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, {message: "Failed to save data."})));
+            }
+        } else {
+            root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, {message: "No condition found."})));
+        }
     }
 
     // Go!
     index().catch((e) => {
-      console.error(e);
-      root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, { message: "Unexpected error. Check console." })));
+        console.error(e);
+        root.render(React.createElement(React.StrictMode, null, React.createElement(ErrorView, {message: "Unexpected error. Check console."})));
     });
-  </script>
+</script>
 </body>
 </html>
