@@ -25,6 +25,14 @@ cd testing_zone
 ```
 
 ```shell
+npm install firebase
+```
+
+```shell
+npm install -g firebase-tools
+```
+
+```shell
 firebase login
 ```
 
@@ -34,7 +42,7 @@ firebase init
 
 > - Choose only Firestore (not Hosting, Functions, etc)
 > - Use an existing project (the one you just created)
-> - for database you can choose nam5 and us-central (or whatever is close to you)
+> - for the database you can choose nam5 and us-central (or whatever is close to you)
 > - ? What file should be used for Firestore Rules? > firestore.rules -> enter
 > - If asked to overwrite, choose no
 > - ? What file should be used for Firestore indexes? > firestore.indexes.json -> enter
