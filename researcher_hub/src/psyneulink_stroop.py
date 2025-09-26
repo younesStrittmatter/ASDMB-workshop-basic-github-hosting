@@ -121,7 +121,7 @@ class Stroop:
 
     def predict(self, x):
         self.comp.run(x, execution_mode=pnl.ExecutionMode.LLVMRun)
-        return self.comp.results
+        return self.comp.results[-len(x):]
 
     def fit(self, x, y):
         import optuna
